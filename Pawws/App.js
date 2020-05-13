@@ -1,21 +1,14 @@
 import React, { useEffect } from 'react';
-
+import 'react-native-gesture-handler';
 import SplashScreen from 'react-native-splash-screen';
-import { createStackNavigator } from 'react-navigation-stack';
-import { createAppContainer } from 'react-navigation';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import Home from './src/components/Home/Home';
 import Login from './src/components/Login/Login';
+import PetTaxi from './src/components/PetTaxi/PetTaxi';
+import PetTaxiConfirm from './src/components/PetTaxi/PetTaxiConfirm';
 
-const AppNavigator = createStackNavigator(
-  {
-    Login: { screen: Login },
-    Home: { screen: Home },
-
-  },
-  {
-    initialRouteName: 'Login',
-  });
-const AppContainer = createAppContainer(AppNavigator);
+const Stack = createStackNavigator();
 
 const App = () => {
   useEffect(() => {
@@ -23,7 +16,14 @@ const App = () => {
   }, []);
 
   return (
-    <AppContainer />
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="PetTaxi" component={PetTaxi} />
+        <Stack.Screen name="PetTaxiConfirm" component={PetTaxiConfirm} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 
