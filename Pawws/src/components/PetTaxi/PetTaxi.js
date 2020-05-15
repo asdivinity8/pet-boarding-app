@@ -6,49 +6,65 @@ import DatePicker from 'react-native-datepicker';
 class PetTaxi extends Component {
     constructor(props) {
         super(props);
+        this.error = false;
         this.state = {
             source: '',
             destination: '',
-            date: new Date(),
-            time: '12:00',
-            addressError: false,
-            tdError: false,
+            date: '',
+            time: '',
+            sourceError: false,
+            destError: false,
+            dateError: false,
+            timeError: false,
         }
-    }
-
-    formatDate(date) {
-        let sysDate = new Date();
-        var day = sysDate.getDate();
-        var month = sysDate.getMonth() + 1;
-        var year = sysDate.getFullYear();
-        date = date.split('-').map(x => +x);
-        if (year > date[2] || month > date[1]) {
-            return false;
-        } else if (year === date[2] && month === date[1]) {
-            if (day >= date[0]) {
-                return false;
-            }
-        } else {
-            return true;
-        }
-
     }
 
     validate() {
-        if (this.state.source === '' || this.state.destination === '') {
-            this.setState({ addressError: true });
-        } else if (!this.formatDate(this.state.date)) {
-            this.setState({ tdError: true });
+        if (this.state.source === '') {
+            this.setState({ sourceError: true });
+            this.error = true;
         } else {
+            this.setState({ sourceError: false });
+            this.error = false;
+        }
 
-            this.props.navigation.navigate("PetTaxiConfirm");
+        if (this.state.destination === '') {
+            this.setState({ destError: true });
+            this.error = true;
+        } else {
+            this.setState({ destError: false });
+            this.error = false;
+        }
+
+        if (this.state.date === '') {
+            this.setState({ dateError: true });
+            this.error = true;
+        } else {
+            this.setState({ dateError: false });
+            this.error = false;
+        }
+
+        if (this.state.time === '') {
+            this.setState({ timeError: true });
+            this.error = true;
+        } else {
+            this.setState({ timeError: false });
+            this.error = false;
         }
     };
 
+    navigate() {
+        this.validate();
+        if (!this.error) {
+            this.props.navigation.navigate("PetTaxiConfirm", { state: this.state });
+        }
+    }
+
     image = { uri: "https://i.pinimg.com/originals/21/71/b7/2171b78e28322b87281061714a929769.jpg" };
-
+    currentDate = new Date();
+    minDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), this.currentDate.getDate() + 1);
+    maxDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, this.currentDate.getDate());
     render() {
-
         return (
             <SafeAreaView style={styles.container}>
                 <ImageBackground source={this.image} style={styles.image}>
@@ -56,23 +72,23 @@ class PetTaxi extends Component {
                         <View style={styles.body}>
                             <Image source={require('../../../assets/book-a-ride.png')} style={styles.ImageStyle} />
                             <TextInput placeholder={'pick-up address'}
-                                style={styles.input}
+                                style={[styles.input, { borderColor: this.state.sourceError ? 'red' : 'white', borderWidth: 1, borderStyle: 'solid' }]}
                                 value={this.state.source}
-                                onChangeText={(source) => this.setState({ source })} />
-                            {this.state.addressError ? <Text>Please enter a valid address</Text> : null}
+                                onChangeText={(source) => this.setState({ source })}
+                                onBlur={() => this.validate()} />
                             <TextInput placeholder={'drop address'}
-                                style={styles.input}
+                                style={[styles.input, { borderColor: this.state.destError ? 'red' : 'white', borderWidth: 1, borderStyle: 'solid' }]}
                                 value={this.state.destination}
-                                onChangeText={(destination) => this.setState({ destination })} />
-                            {this.state.addressError ? <Text>Please enter a valid address</Text> : null}
+                                onChangeText={(destination) => this.setState({ destination })}
+                                onBlur={() => this.validate()} />
                             <DatePicker
                                 style={{ width: '90%', marginBottom: 36 }}
                                 date={this.state.date} //initial date from state
                                 mode="date" //The enum of date, datetime and time
                                 placeholder="select date"
                                 format="DD-MM-YYYY"
-                                minDate="01-01-2020"
-                                maxDate="01-01-2021"
+                                minDate={this.minDate}
+                                maxDate={this.maxDate}
                                 confirmBtnText="Confirm"
                                 cancelBtnText="Cancel"
                                 customStyles={{
@@ -82,16 +98,15 @@ class PetTaxi extends Component {
                                         top: 4,
                                         marginLeft: 0
                                     },
-                                    dateInput: {
+                                    dateInput: [{
                                         height: 50,
                                         backgroundColor: 'white',
                                         borderColor: 'white',
                                         borderRadius: 4
-                                    }
+                                    }, { borderColor: this.state.dateError ? 'red' : 'white', borderWidth: 1, borderStyle: 'solid' }]
                                 }}
-                                onDateChange={(date) => { this.setState({ date: date }) }}
+                                onDateChange={(date) => { this.validate(); this.setState({ date: date }) }}
                             />
-                            {this.state.tdError ? <Text>Please enter a date greater than today</Text> : null}
                             <DatePicker
                                 style={{ width: '90%' }}
                                 date={this.state.time} //initial date from state
@@ -100,6 +115,7 @@ class PetTaxi extends Component {
                                 format="HH:mm"
                                 confirmBtnText="Confirm"
                                 cancelBtnText="Cancel"
+                                ref='picker'
                                 customStyles={{
                                     dateIcon: {
                                         position: 'absolute',
@@ -107,20 +123,19 @@ class PetTaxi extends Component {
                                         top: 4,
                                         marginLeft: 0
                                     },
-                                    dateInput: {
-
+                                    dateInput: [{
                                         height: 50,
                                         backgroundColor: 'white',
                                         borderColor: 'white',
                                         borderRadius: 4
-                                    }
+                                    }, { borderColor: this.state.timeError ? 'red' : 'white', borderWidth: 1, borderStyle: 'solid' }]
                                 }}
-                                onDateChange={(time) => { this.setState({ time: time }) }}
+                                onDateChange={(time) => { this.validate(); this.setState({ time: time }) }}
+
                             />
-                            <Text></Text>
                             <Button
                                 title={'Book Ride'}
-                                onPress={() => this.validate()}
+                                onPress={() => this.navigate()}
                                 buttonStyle={styles.bookRide}
                             />
                         </View>
